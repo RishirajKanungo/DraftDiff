@@ -1,0 +1,243 @@
+{
+  "info": {
+    "name": "DraftDiff Riot API",
+    "description": "Postman collection for testing DraftDiff backend Riot endpoints locally. Ensure backend is running and RIOT_API_KEY is set in backend/.env.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000/api/v1" },
+    { "key": "game_name", "value": "Faker" },
+    { "key": "tag_line", "value": "KR1" },
+    { "key": "puuid", "value": "" },
+    { "key": "encrypted_summoner_id", "value": "" },
+    { "key": "match_id", "value": "" },
+    { "key": "start", "value": "0" },
+    { "key": "count", "value": "20" },
+    { "key": "queue", "value": "420" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      },
+      "response": [
+        {
+          "name": "OK",
+          "originalRequest": {
+            "method": "GET",
+            "header": [ { "key": "Accept", "value": "application/json" } ],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [ { "key": "Content-Type", "value": "application/json" } ],
+          "body": "{\n  \"status\": \"ok\",\n  \"version\": \"0.1.0\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Riot / Account by Riot ID",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/riot/account/by-riot-id?game_name={{game_name}}&tag_line={{tag_line}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["riot", "account", "by-riot-id"],
+          "query": [
+            { "key": "game_name", "value": "{{game_name}}" },
+            { "key": "tag_line", "value": "{{tag_line}}" }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Example",
+          "originalRequest": {
+            "method": "GET",
+            "header": [ { "key": "Accept", "value": "application/json" } ],
+            "url": {
+              "raw": "{{baseUrl}}/riot/account/by-riot-id?game_name={{game_name}}&tag_line={{tag_line}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["riot", "account", "by-riot-id"],
+              "query": [
+                { "key": "game_name", "value": "{{game_name}}" },
+                { "key": "tag_line", "value": "{{tag_line}}" }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [ { "key": "Content-Type", "value": "application/json" } ],
+          "body": "{\n  \"puuid\": \"<puuid>\",\n  \"gameName\": \"Faker\",\n  \"tagLine\": \"KR1\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Riot / Summoner by PUUID",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/riot/summoner/by-puuid/{{puuid}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["riot", "summoner", "by-puuid", "{{puuid}}"]
+        }
+      },
+      "response": [
+        {
+          "name": "Example",
+          "status": "OK",
+          "code": 200,
+          "header": [ { "key": "Content-Type", "value": "application/json" } ],
+          "body": "{\n  \"id\": \"<encrypted_summoner_id>\",\n  \"accountId\": \"<encrypted_account_id>\",\n  \"puuid\": \"<puuid>\",\n  \"name\": \"SummonerName\",\n  \"summonerLevel\": 500\n}"
+        }
+      ]
+    },
+    {
+      "name": "Riot / Matches by PUUID",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/riot/matches/by-puuid/{{puuid}}?start={{start}}&count={{count}}&queue={{queue}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["riot", "matches", "by-puuid", "{{puuid}}"],
+          "query": [
+            { "key": "start", "value": "{{start}}" },
+            { "key": "count", "value": "{{count}}" },
+            { "key": "queue", "value": "{{queue}}" }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Example",
+          "status": "OK",
+          "code": 200,
+          "header": [ { "key": "Content-Type", "value": "application/json" } ],
+          "body": "[\n  \"KR_1234567890\",\n  \"KR_0987654321\"\n]"
+        }
+      ]
+    },
+    {
+      "name": "Riot / Match by ID",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/riot/match/{{match_id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["riot", "match", "{{match_id}}"]
+        }
+      },
+      "response": [
+        {
+          "name": "Example",
+          "status": "OK",
+          "code": 200,
+          "header": [ { "key": "Content-Type", "value": "application/json" } ],
+          "body": "{\n  \"metadata\": { \"matchId\": \"KR_1234567890\", \"participants\": [\"<puuid>\"] },\n  \"info\": { \"gameMode\": \"CLASSIC\" }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Riot / Match Timeline",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/riot/match/{{match_id}}/timeline",
+          "host": ["{{baseUrl}}"],
+          "path": ["riot", "match", "{{match_id}}", "timeline"]
+        }
+      },
+      "response": [
+        {
+          "name": "Example",
+          "status": "OK",
+          "code": 200,
+          "header": [ { "key": "Content-Type", "value": "application/json" } ],
+          "body": "{\n  \"metadata\": { \"matchId\": \"KR_1234567890\" },\n  \"info\": { \"frameInterval\": 60000, \"frames\": [] }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Riot / League Entries by Summoner",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/riot/league/entries/by-summoner/{{encrypted_summoner_id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["riot", "league", "entries", "by-summoner", "{{encrypted_summoner_id}}"]
+        }
+      },
+      "response": [
+        {
+          "name": "Example",
+          "status": "OK",
+          "code": 200,
+          "header": [ { "key": "Content-Type", "value": "application/json" } ],
+          "body": "[\n  { \"queueType\": \"RANKED_SOLO_5x5\", \"tier\": \"CHALLENGER\", \"rank\": \"I\", \"leaguePoints\": 1000, \"wins\": 500, \"losses\": 300 }\n]"
+        }
+      ]
+    },
+    {
+      "name": "Riot / Static Champions",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/riot/static/champions",
+          "host": ["{{baseUrl}}"],
+          "path": ["riot", "static", "champions"]
+        }
+      },
+      "response": [
+        {
+          "name": "Example",
+          "status": "OK",
+          "code": 200,
+          "header": [ { "key": "Content-Type", "value": "application/json" } ],
+          "body": "{\n  \"type\": \"champion\",\n  \"data\": { \"Aatrox\": { \"version\": \"14.x\", \"id\": \"Aatrox\", \"name\": \"Aatrox\" } }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Riot / Static Runes",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/riot/static/runes",
+          "host": ["{{baseUrl}}"],
+          "path": ["riot", "static", "runes"]
+        }
+      },
+      "response": [
+        {
+          "name": "Example",
+          "status": "OK",
+          "code": 200,
+          "header": [ { "key": "Content-Type", "value": "application/json" } ],
+          "body": "[ { \"id\": 8000, \"key\": \"Precision\", \"icon\": \"perk-images/Styles/Precision/Precision.png\" } ]"
+        }
+      ]
+    }
+  ]
+}
+
+

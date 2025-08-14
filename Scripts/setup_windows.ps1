@@ -8,13 +8,67 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Resolve-Path (Join-Path $ScriptDir '..')
 Set-Location $RepoRoot
 
+function Get-PoetryExe {
+  # Try PATH first
+  $cmd = (Get-Command poetry -ErrorAction SilentlyContinue)
+  if ($cmd) { return $cmd.Source }
+  # Common install locations (installer >= 2.x)
+  $candidates = @(
+    (Join-Path $env:APPDATA 'pypoetry/venv/Scripts/poetry.exe'),
+    (Join-Path $env:LOCALAPPDATA 'pypoetry/venv/Scripts/poetry.exe'),
+    (Join-Path $env:USERPROFILE '.poetry/bin/poetry.exe')
+  )
+  foreach ($path in $candidates) {
+    if ($path -and (Test-Path $path)) { return $path }
+  }
+  # where.exe as last PATH probe
+  try {
+    $where = (where.exe poetry 2>$null | Select-Object -First 1)
+    if ($where) { return $where }
+  } catch {}
+  return $null
+}
+
 # Install Poetry if missing
-$poetryCmd = (Get-Command poetry -ErrorAction SilentlyContinue)
-if (-not $poetryCmd) {
+$poetryBefore = Get-PoetryExe
+if (-not $poetryBefore) {
   Write-Host "`n-> Installing Poetry..." -ForegroundColor Yellow
   (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+}
+
+$PoetryExe = Get-PoetryExe
+if ($PoetryExe) {
+  Write-Host "Using Poetry at: $PoetryExe" -ForegroundColor DarkGray
+  $script:PoetryExe = $PoetryExe
 } else {
-  Write-Host "`n-> Poetry already installed" -ForegroundColor Green
+  Write-Host "Poetry not found on PATH yet; will try 'py -m poetry' as a fallback." -ForegroundColor Yellow
+  $script:PoetryExe = $null
+}
+
+function Run-Poetry {
+  param(
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]] $Args
+  )
+  if ($script:PoetryExe) { & $script:PoetryExe @Args }
+  else { & py -m poetry @Args }
+}
+
+function Get-PythonExe {
+  $versions = @('3.12','3.11','3.10')
+  foreach ($v in $versions) {
+    try {
+      $exe = (& py -$v -c "import sys; print(sys.executable)" 2>$null)
+      if ($exe) { return $exe.Trim() }
+    } catch {}
+  }
+  try {
+    $exe = (& py -3 -c "import sys; print(sys.executable)" 2>$null)
+    if ($exe) { return $exe.Trim() }
+  } catch {}
+  $cmd = (Get-Command python -ErrorAction SilentlyContinue)
+  if ($cmd) { return $cmd.Source }
+  return $null
 }
 
 # Make sure a supported Python version exists
@@ -27,19 +81,17 @@ if (-not (Test-Path .env) -and (Test-Path .env.example)) {
 }
 
 # Ensure in-project venv
-poetry config virtualenvs.in-project true | Out-Null
+Run-Poetry config virtualenvs.in-project true | Out-Null
 
-# Prefer Python 3.12 if available
-$python = 'py -3.12'
-try {
-  & py -3.12 -V | Out-Null
-} catch {
-  $python = 'py -3'
+# Prefer a working Python (3.12/3.11/3.10) discovered via py launcher
+$pythonExe = Get-PythonExe
+if (-not $pythonExe) {
+  throw "No suitable Python 3.10-3.12 found. Please install Python 3.12 and re-run."
 }
 
 # Create venv and install deps
-& poetry env use $python | Out-Null
-& poetry install --no-interaction --no-ansi
+Run-Poetry env use $pythonExe | Out-Null
+Run-Poetry install --no-interaction --no-ansi
 
 # Frontend setup
 Write-Host "`n-> Setting up frontend (Node)" -ForegroundColor Cyan
